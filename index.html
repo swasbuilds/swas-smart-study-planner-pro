@@ -1,0 +1,108 @@
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Smart Study Planner Pro</title>  <script src="https://cdn.tailwindcss.com"></script>  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">  <style>
+    body { font-family: 'Poppins', sans-serif; }
+  </style></head><body class="bg-gradient-to-br from-purple-900 via-black to-gray-900 min-h-screen text-white flex items-center justify-center"><div class="w-full max-w-2xl p-6 rounded-3xl backdrop-blur-lg bg-white/10 shadow-2xl border border-white/20">  <h1 class="text-2xl font-bold mb-4 text-center">🚀 Study Planner Pro</h1>  <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-4">
+    <input id="taskInput" placeholder="Task..." class="p-2 rounded bg-white/20">
+    <input id="dateInput" type="date" class="p-2 rounded bg-white/20">
+    <select id="categoryInput" class="p-2 rounded bg-white/20">
+      <option>Physics</option>
+      <option>Chemistry</option>
+      <option>Maths</option>
+      <option>Other</option>
+    </select>
+  </div><button onclick="addTask()" class="w-full mb-4 bg-purple-500 p-2 rounded">Add Task</button>
+
+  <div class="w-full bg-gray-700 h-2 rounded-full mb-4">
+    <div id="progressBar" class="bg-purple-400 h-2 rounded-full" style="width:0%"></div>
+  </div><canvas id="chart" class="mb-4"></canvas>
+
+  <div class="flex justify-between text-sm mb-3">
+    <span id="stats"></span>
+    <span id="streak"></span>
+  </div>  <ul id="taskList" class="space-y-3"></ul></div><script>
+let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+let streak = localStorage.getItem("streak") || 0;
+
+function save() {
+  localStorage.setItem("tasks", JSON.stringify(tasks));
+  localStorage.setItem("streak", streak);
+}
+
+function addTask() {
+  const text = taskInput.value.trim();
+  const date = dateInput.value;
+  const category = categoryInput.value;
+
+  if (!text) return;
+
+  tasks.push({ text, date, category, done: false });
+  taskInput.value = "";
+  save(); render();
+}
+
+function toggleTask(i) {
+  tasks[i].done = !tasks[i].done;
+  if (tasks[i].done) streak++;
+  save(); render();
+}
+
+function deleteTask(i) {
+  tasks.splice(i,1);
+  save(); render();
+}
+
+function render() {
+  taskList.innerHTML = "";
+  let done = 0;
+
+  tasks.forEach((t,i)=>{
+    if(t.done) done++;
+
+    const li = document.createElement("li");
+    li.className = "p-3 rounded-xl bg-white/10 flex justify-between";
+
+    li.innerHTML = `
+      <div onclick="toggleTask(${i})" class="cursor-pointer">
+        <div class="${t.done?'line-through text-gray-400':''}">${t.text}</div>
+        <div class="text-xs">${t.category} • ${t.date||"No date"}</div>
+      </div>
+      <button onclick="deleteTask(${i})">❌</button>
+    `;
+
+    if (t.date && new Date(t.date) <= new Date() && !t.done) {
+      alert("Deadline reached: " + t.text);
+    }
+
+    taskList.appendChild(li);
+  });
+
+  updateProgress(done);
+  stats.innerText = `${done}/${tasks.length} completed`;
+  document.getElementById("streak").innerText = `🔥 ${streak}`;
+
+  renderChart(done, tasks.length);
+}
+
+function updateProgress(done) {
+  const total = tasks.length;
+  const percent = total ? (done/total)*100 : 0;
+  progressBar.style.width = percent + "%";
+}
+
+function renderChart(done, total) {
+  const ctx = document.getElementById('chart');
+  new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Done', 'Remaining'],
+      datasets: [{ data: [done, total-done] }]
+    }
+  });
+}
+
+render();
+</script></body>
+</html>
