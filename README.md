@@ -27,7 +27,7 @@ A modern and visually appealing productivity web app designed to help students m
 
 ## 🌐 Live Demo
 
-👉 https://yourusername.github.io/smart-study-planner-pro  
+👉 https://swasbuilds.github.io/swas-smart-study-planner-pro/
 
 ---
 
